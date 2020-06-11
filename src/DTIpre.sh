@@ -1,9 +1,9 @@
 #!/bin/bash
 # get batch option edit based on [HCPpipline]()
 get_batch_options(){
+    	local arguments=("$@")
 	local index=0
 	local numArgs=${#arguments[@]}
-    	local arguments=("$@")
 	local argument
 
     	while [ ${index} -lt ${numArgs} ]; do
@@ -150,8 +150,8 @@ else
 	else
 		b0_script="b0_pro"
 		dwipreproc_opt="-rpe_pair -se_epi $b0mean_pair"
+	fi
 fi
-
 # Denoising
 
 ## from [manual](https://mrtrix.readthedocs.io/en/latest/dwi_preprocessing/denoising.html) 
@@ -175,4 +175,7 @@ dwipreproc $PrepImage $PrepImage_mdc \
 	-eddy_option " --slm=linear"
 #Bias field correction
 dwibiascorrect -fsl $PrepImage_mdc $PreprocessedImage -bias $bias
-#dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias 
+#dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias
+
+
+
