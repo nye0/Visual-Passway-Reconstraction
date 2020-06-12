@@ -121,7 +121,7 @@ PrepImage=$den_unr
 PrepImage_mdc=${PrepImage%%.mif}-mdc.mif
 PreprocessedImage=${PrepImage_mdc%%.mif}-unbiased.mif
   bias=${PrepImage_mdc%%.mif}-bias.mif
-
+BrainMask=${PreprocessedImage%%.mif}-unb.mif
 
 
 #----------------------------------------------------------
@@ -177,5 +177,8 @@ dwipreproc $PrepImage $PrepImage_mdc \
 dwibiascorrect -fsl $PrepImage_mdc $PreprocessedImage -bias $bias
 #dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias
 
-
-
+#Brain mask estimation
+dwi2mask $PreprocessedImage $BrainMask
+# dwibiascorrect can potentially deteriorate brain mask estimation!
+# have to check with 
+# mrview $PreprocessedImage -overlay.load $BrainMask
