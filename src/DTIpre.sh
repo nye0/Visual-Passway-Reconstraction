@@ -1,5 +1,14 @@
 #!/bin/bash
+#----------------------------------------------------------
+# runing time
+
+set StartTime = `date`;
+set tSecStart = `date '+%s'`;
+#----------------------------------------------------------
+
+
 # get batch option edit based on [HCPpipline]()
+
 get_batch_options(){
     	local arguments=("$@")
 	local index=0
@@ -182,3 +191,15 @@ dwi2mask $PreprocessedImage $BrainMask
 # dwibiascorrect can potentially deteriorate brain mask estimation!
 # have to check with 
 # mrview $PreprocessedImage -overlay.load $BrainMask
+
+#----------------------------------------------------------
+# runing time
+set EndTime = `date`;
+set tSecEnd = `date '+%s'`;
+@ tSecRun = $tSecEnd - $tSecStart;
+set tRunHours = `echo $tSecRun/3600|bc -l`
+set tRunHours = `printf %6.3f $tRunHours`
+echo "Started at $StartTime " 
+echo "Ended   at $EndTime" 
+echo "#@#%# run-time-hours $tRunHours" 
+#----------------------------------------------------------
