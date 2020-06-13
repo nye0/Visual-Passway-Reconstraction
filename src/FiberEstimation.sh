@@ -3,6 +3,10 @@ PreprocessedImage=$1
 BrainMask=$2
 T1Raw=$3
 ResultRoot=$4
+#PreprocessedImage=result/testing/raw-den-unr-mdc-unbiased.mif
+#BrainMask=/Users/ningrongye/Desktop/python/MRI/TCB/Test_mrtrix/FSL_brainmask.mif
+#T1Raw=data/FT_T1/
+#ResultRoot=result/FiberEstimation/
 if [ ! -d "${ResultRoot}" ]; then
 	mkdir -p $ResultRoot
 fi
@@ -28,6 +32,7 @@ tt5_nocoreg=$ResultRoot/5tt-nocoreg.mif
   b0_mean=$ResultRoot/${PreprocessedImage_name%%.mif}-b0mean.nii.gz
   diff2struct_fsl=$ResultRoot/diff2struct-fsl.mat
   diff2struct_mrtrix=$ResultRoot/diff2struct-mrtrix.txt
+  tt5_nocoreg_NotUnityMask=${tt5_nocoreg%%.mif}-NoUnityMask.mif
 tt5_coreg=$ResultRoot/5tt-coreg.mif
 
 
@@ -74,9 +79,11 @@ mrview $vfMap_norm -odf.load_sh $wm_fodnorm &
 ##	BATMAN_tutorial.pdf: page 15
 mrconvert $T1Raw $T1Use
 5ttgen fsl $T1Use ${tt5_nocoreg}
-
+# result 5tt_nocoreg contains 5 brain voxels with non-unity sum of partial volume fractions
+5ttcheck $tt5_nocoreg -masks $tt5_nocoreg_NotUnityMask
+mrview $tt5_nocoreg &
 # not tested:
-dwiextract $PreprocessedImage - -bzero | mrmath - mean ${b0_mean%%.nii.gz}.mif
+dwiextract $PreprocessedImage - -bzero | mrmath - mean ${b0_mean%%.nii.gz}.mif -axis 3
 mrconvert ${b0_mean%%.nii.gz}.mif $b0_mean
 tt5_nocoreg_nii=${tt5_nocoreg%%.mif}.nii.gz
 mrconvert $tt5_nocoreg ${tt5_nocoreg_nii}
@@ -91,3 +98,6 @@ transformconvert 	$diff2struct_fsl \
 mrtransform $tt5_nocoreg \
 	    -linear $diff2struct_mrtrix \
 	    -inverse $tt5_coreg
+mrview  $PreprocessedImage \
+	-overlay.load $tt5_nocoreg -overlay.colourmap 2 \
+	-overlay.load $tt5_coreg -overlay.colourmap 1 &
