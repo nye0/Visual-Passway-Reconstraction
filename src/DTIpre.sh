@@ -120,7 +120,7 @@ fi
 #----------------------------------------------------------
 
 # Var will be used
-RawUse=$ResultRoot/raw.mif
+RawUse=$ResultRoot/DWI-raw.mif
 den=${RawUse%%.mif}-den.mif
   noise=${RawUse%%.mif}-noise.mif
 den_unr=${den%%.mif}-unr.mif
@@ -129,6 +129,7 @@ PrepImage=$den_unr
 PrepImage_mdc=${PrepImage%%.mif}-mdc.mif
 PreprocessedImage=${PrepImage_mdc%%.mif}-unbiased.mif
   bias=${PrepImage_mdc%%.mif}-bias.mif
+PreprocessedImage_nii=${PreprocessedImage%%.mif}.nii.gz
 BrainMask=${PreprocessedImage%%.mif}-unb.mif
 
 
@@ -183,6 +184,7 @@ dwipreproc $PrepImage $PrepImage_mdc \
 	-eddy_option " --slm=linear"
 #Bias field correction
 dwibiascorrect -fsl $PrepImage_mdc $PreprocessedImage -bias $bias
+#Use of -fsl option in dwibiascorrect script is discouraged due to its strong dependence on initial brain masking, and its inability to correct voxels outside of this mask.Use of the -ants option is recommended for quantitative DWI analyses.
 #dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias
 
 #Brain mask estimation
@@ -190,6 +192,15 @@ dwi2mask $PreprocessedImage $BrainMask
 # dwibiascorrect can potentially deteriorate brain mask estimation!
 # have to check with 
 # mrview $PreprocessedImage -overlay.load $BrainMask
+
+## tested the mask is not good! 
+
+# using fsl bet function for brain mask estimation
+# not tested
+mrconvert $PreprocessedImage ${PreprocessedImage_nii}
+bet ${PreprocessedImage_nii} ${BrainMask%%.mif}.nii.gz
+mrconvert ${BrainMask%%.mif}.nii.gz ${BrainMask} -m -n
+
 
 #----------------------------------------------------------
 # runing time
