@@ -194,9 +194,9 @@ dwi2mask $PreprocessedImage $BrainMask
 # mrview $PreprocessedImage -overlay.load $BrainMask
 
 ## tested the mask is not good! 
-
-# using fsl bet function for brain mask estimation
-# not tested
+## maybe because we used the dwibiascorrect -fsl not dwibiascorrect -ants!!
+## using fsl bet function for brain mask estimation
+## not tested
 mrconvert $PreprocessedImage ${PreprocessedImage_nii}
 bet ${PreprocessedImage_nii} ${BrainMask%%.mif}.nii.gz
 mrconvert ${BrainMask%%.mif}.nii.gz ${BrainMask} -m -n
