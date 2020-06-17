@@ -40,3 +40,22 @@ mri_label2vol --seg ${Right_LGN}.mgz  \
               --regheader $RawResult
 
 # V1 
+Transform_FS2RawSpace=${SUBJECTS_DIR}/${ID}/mri/transforms/FS2Raw.data
+Left_V1=${SUBJECTS_DIR}/${ID}/label/lh.V1_exvivo.label
+Right_V1=${SUBJECTS_DIR}/${ID}/label/rh.V1_exvivo.labe
+tkregister2 --mov $T1_RawSpace \
+	    --noedit \
+	    --s $ID \
+	    --regheader \
+	    --reg  ${Transform_FS2RawSpace}
+for h in lh rh; do
+	V1_label=${SUBJECTS_DIR}/${ID}/label/${h}.V1_exvivo.label
+	mri_label2vol --label $V1_label \
+		      --temp $T1_RawSpace \
+		      --subject $ID \
+		      --hemi $h \
+		      --o ${V1_label}.FS2RawSpace.nii.gz \
+		      --reg $Transform_FS2RawSpace \
+		      --fillthresh .3 \
+		      --proj frac 0 1 .1		     
+done
