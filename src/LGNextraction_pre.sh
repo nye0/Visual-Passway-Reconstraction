@@ -16,3 +16,27 @@ recon-all -sd $SUBJECTS_DIR \
 segmentThalamicNuclei.sh YQ_0006
 freeview -v ${SUBJECTS_DIR}/${ID}/mri/nu.mgz \
 	 -v ${SUBJECTS_DIR}/${ID}/mri/ThalamicNuclei.v12.T1.mgz:colormap=lut &
+# extract LGN ID was extract from $FREESURFER_HOME/FreeSurferColorLUT.txt 
+Left_LGN_ID=8109
+Right_LGN_ID=8209
+RawResult=${SUBJECTS_DIR}/${ID}/mri/ThalamicNuclei.v12.T1.FSvoxelSpace.mgz
+T1_RawSpace=${SUBJECTS_DIR}/${ID}/mri/rawavg.mgz
+Left_LGN=${SUBJECTS_DIR}/${ID}/mri/ThalamicNuclei.v12.T1.FSvoxelSpace.lh.LGN
+Right_LGN=${SUBJECTS_DIR}/${ID}/mri/ThalamicNuclei.v12.T1.FSvoxelSpace.rh.LGN
+mri_binarize --i ${RawResult} \
+	     --match $Left_LGN_ID \
+	     --o ${Left_LGN}.mgz 
+mri_binarize --i ${RawResult} \
+             --match $Right_LGN_ID \
+             --o ${Right_LGN}.mgz 
+
+mri_label2vol --seg ${Left_LGN}.mgz  \
+	      --temp $T1_RawSpace \
+	      --o ${Left_LGN}.RawSpace.nii.gz \
+	      --regheader $RawResult
+mri_label2vol --seg ${Right_LGN}.mgz  \
+              --temp $T1_RawSpace \
+              --o ${Right_LGN}.RawSpace.nii.gz \
+              --regheader $RawResult
+
+# V1 
