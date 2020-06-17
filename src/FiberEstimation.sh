@@ -34,7 +34,7 @@ tt5_nocoreg=$ResultRoot/5tt-nocoreg.mif
   diff2struct_mrtrix=$ResultRoot/diff2struct-mrtrix.txt
   tt5_nocoreg_NotUnityMask=${tt5_nocoreg%%.mif}-NoUnityMask.mif
 tt5_coreg=$ResultRoot/5tt-coreg.mif
-
+gmwmSeed=${tt5_coreg%%.mif}-gmwmSeed.mif
 
 dwi2response	dhollander \
 		$PreprocessedImage \
@@ -82,7 +82,6 @@ mrconvert $T1Raw $T1Use
 # result 5tt_nocoreg contains 5 brain voxels with non-unity sum of partial volume fractions
 5ttcheck $tt5_nocoreg -masks $tt5_nocoreg_NotUnityMask
 mrview $tt5_nocoreg &
-# not tested:
 dwiextract $PreprocessedImage - -bzero | mrmath - mean ${b0_mean%%.nii.gz}.mif -axis 3
 mrconvert ${b0_mean%%.nii.gz}.mif $b0_mean
 tt5_nocoreg_nii=${tt5_nocoreg%%.mif}.nii.gz
@@ -101,3 +100,11 @@ mrtransform $tt5_nocoreg \
 mrview  $PreprocessedImage \
 	-overlay.load $tt5_nocoreg -overlay.colourmap 2 \
 	-overlay.load $tt5_coreg -overlay.colourmap 1 &
+
+# Preparing a mask of streamline seeding
+5tt2gmwmi $tt5_coreg $gmwmSeed
+mrview $PreprocessedImage \
+        -overlay.load $gmwmSeed &
+# not good maybe due to the PreprocessedImage is not good.
+
+
