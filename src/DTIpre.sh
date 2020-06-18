@@ -1,8 +1,8 @@
 #!/bin/bash
 #----------------------------------------------------------
 # runing time
-set StartTime = `date`;
-set tSecStart = `date '+%s'`;
+StartTime= `date`;
+tSecStart= `date '+%s'`;
 #----------------------------------------------------------
 
 
@@ -183,9 +183,9 @@ dwipreproc $PrepImage $PrepImage_mdc \
 	${dwipreproc_opt} \
 	-eddy_option " --slm=linear"
 #Bias field correction
-dwibiascorrect -fsl $PrepImage_mdc $PreprocessedImage -bias $bias
+#dwibiascorrect -fsl $PrepImage_mdc $PreprocessedImage -bias $bias
 #Use of -fsl option in dwibiascorrect script is discouraged due to its strong dependence on initial brain masking, and its inability to correct voxels outside of this mask.Use of the -ants option is recommended for quantitative DWI analyses.
-#dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias
+dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias
 
 #Brain mask estimation
 dwi2mask $PreprocessedImage $BrainMask
@@ -204,11 +204,11 @@ mrconvert ${BrainMask%%.mif}.nii.gz ${BrainMask} -m -n
 
 #----------------------------------------------------------
 # runing time
-set EndTime = `date`;
-set tSecEnd = `date '+%s'`;
-@ tSecRun = $tSecEnd - $tSecStart;
-set tRunHours = `echo $tSecRun/3600|bc -l`
-set tRunHours = `printf %6.3f $tRunHours`
+EndTime= `date`;
+tSecEnd= `date '+%s'`;
+tSecRun= $((tSecEnd - tSecStart));
+tRunHours= `echo $tSecRun/3600|bc -l`
+tRunHours= `printf %6.3f $tRunHours`
 echo "Started at $StartTime " 
 echo "Ended   at $EndTime" 
 echo "#@#%# run-time-hours $tRunHours" 
