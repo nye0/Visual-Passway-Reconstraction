@@ -1,8 +1,8 @@
 #!/bin/bash
 #----------------------------------------------------------
 # runing time
-StartTime= `date`;
-tSecStart= `date '+%s'`;
+StartTime=`date`
+tSecStart=`date '+%s'`
 #----------------------------------------------------------
 
 
@@ -129,7 +129,8 @@ PrepImage=$den_unr
 PrepImage_mdc=${PrepImage%%.mif}-mdc.mif
 PreprocessedImage=${PrepImage_mdc%%.mif}-unbiased.mif
   bias=${PrepImage_mdc%%.mif}-bias.mif
-PreprocessedImage_nii=${PreprocessedImage%%.mif}.nii.gz
+  PreprocessedImage_B0=${PreprocessedImage%%.mif}-b0.mif
+  PreprocessedImage_B0_nii=${PreprocessedImage_B0%%.mif}.nii.gz
 BrainMask=${PreprocessedImage%%.mif}-unb.mif
 
 
@@ -189,27 +190,30 @@ dwibiascorrect -ants $PrepImage_mdc $PreprocessedImage  -bias $bias
 
 #Brain mask estimation
 dwi2mask $PreprocessedImage $BrainMask
-# dwibiascorrect can potentially deteriorate brain mask estimation!
+#dwibiascorrect can potentially deteriorate brain mask estimation!
 # have to check with 
 # mrview $PreprocessedImage -overlay.load $BrainMask
 
 ## tested the mask is not good! 
 ## maybe because we used the dwibiascorrect -fsl not dwibiascorrect -ants!!
 ## using fsl bet function for brain mask estimation
-## not tested
-mrconvert $PreprocessedImage ${PreprocessedImage_nii}
-bet ${PreprocessedImage_nii} ${BrainMask%%.mif}.nii.gz
-mrconvert ${BrainMask%%.mif}.nii.gz ${BrainMask} -m -n
+## tested
+dwiextract $PreprocessedImage - -bzero | mrmath - mean $PreprocessedImage_B0 -axis 3
+mrconvert $PreprocessedImage_B0 ${PreprocessedImage_B0_nii}
+bet ${PreprocessedImage_B0_nii} ${BrainMask%%.mif}.nii.gz  -m -n
+mv ${BrainMask%%.mif}_mask.nii.gz ${BrainMask%%.mif}.nii.gz
+mrconvert ${BrainMask%%.mif}.nii.gz ${BrainMask%%.mif}-fslbet.mif
 
 
 #----------------------------------------------------------
 # runing time
-EndTime= `date`;
-tSecEnd= `date '+%s'`;
-tSecRun= $((tSecEnd - tSecStart));
-tRunHours= `echo $tSecRun/3600|bc -l`
-tRunHours= `printf %6.3f $tRunHours`
-echo "Started at $StartTime " 
-echo "Ended   at $EndTime" 
-echo "#@#%# run-time-hours $tRunHours" 
+EndTime=`date`
+tSecEnd=`date '+%s'`
+tSecRun=$(( tSecEnd - tSecStart ))
+tRunHours=`echo $tSecRun/3600|bc -l`
+tRunHours=`printf %6.3f $tRunHours`
+echo "Started at $StartTime "
+echo "Ended   at $EndTime"
+echo "#@#%# run-time-hours $tRunHours"
+
 #----------------------------------------------------------
