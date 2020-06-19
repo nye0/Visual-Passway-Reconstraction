@@ -1,10 +1,10 @@
 #!/bin/bash
-SUBJECTS_DIR=/media/oxygen/y2/202002/git/freesurfer_LGNextraction/result/
-Raw=./data/YQ_T1_0006
-T1_f1=`ls $Raw|head -1`
-T2=./data/YQ_T2_0007
-T2_f1=`ls  $T2|head -1`
-ID=YQ_0006
+#SUBJECTS_DIR=/media/oxygen/y2/202002/git/freesurfer_LGNextraction/result/
+#Raw=./data/YQ_T1_0006
+#T1_f1=`ls $Raw|head -1`
+#T2=./data/YQ_T2_0007
+#T2_f1=`ls  $T2|head -1`
+#ID=YQ_0006
 get_batch_options(){
         local arguments=("$@")
         local index=0
@@ -103,43 +103,43 @@ Right_LGNUse=$MaskUseRoot/T1Orig-rh.LGN.nii.gz
 Transform_FS2T1Orig=$FSRoot/mri/transforms/FS2T1Orig.data
 
 mkdir -p $MaskUseRoot $SUBJECTS_DIR
-recon-all -sd $SUBJECTS_DIR \
+echo recon-all -sd $SUBJECTS_DIR \
 	  -subjid $SubjectID \
-	  -cm \ #conform volumes to the min voxel size, resolution was higher than 1mm 
+	  -cm \
 	  -all \
 	  -mprage \
 	  -qcache \
 	  -i $T1Image/$T1_f1 \
 	  -T2 $T2Image/$T2_f1 -T2pial
-segmentThalamicNuclei.sh $SubjectID
+echo segmentThalamicNuclei.sh $SubjectID
 echo freeview -v ${SUBJECTS_DIR}/${SubjectID}/mri/nu.mgz \
 	 -v ${SUBJECTS_DIR}/${SubjectID}/mri/ThalamicNuclei.v12.T1.mgz:colormap=lut &
 # extract LGN ID was extract from $FREESURFER_HOME/FreeSurferColorLUT.txt 
-mri_binarize --i $FS_ThalamicNucleiSeg \
+echo mri_binarize --i $FS_ThalamicNucleiSeg \
 	     --match $Left_LGN_ID \
 	     --o ${Left_LGN}.mgz 
-mri_binarize --i $FS_ThalamicNucleiSeg \
+echo mri_binarize --i $FS_ThalamicNucleiSeg \
              --match $Right_LGN_ID \
              --o ${Right_LGN}.mgz 
 
-mri_label2vol --seg ${Left_LGN}.mgz  \
+echo mri_label2vol --seg ${Left_LGN}.mgz  \
 	      --temp $FS_T1Orig \
 	      --o ${Left_LGNUse} \
 	      --regheader $FS_ThalamicNucleiSeg
-mri_label2vol --seg ${Right_LGN}.mgz  \
+echo mri_label2vol --seg ${Right_LGN}.mgz  \
 	      --temp $FS_T1Orig \
               --o ${Right_LGNUse} \
               --regheader $FS_ThalamicNucleiSeg
 
 # V1 
-tkregister2 --mov $FS_T1Orige \
+tkregister2 --mov $FS_T1Orig \
 	    --noedit \
-	    --s $ID \
+	    --s $SubjectID \
 	    --regheader \
 	    --reg  ${Transform_FS2T1Orig}
 for h in lh rh; do
 	V1_label=$FSRoot/label/${h}.V1_exvivo.label
-	V1Use=$MaskUseRoot/T1Orig-{h}.V1_exvivo.nii.gz
+	V1Use=$MaskUseRoot/T1Orig-${h}.V1_exvivo.nii.gz
 	# based on http://surfer.nmr.mgh.harvard.edu/fswiki/mri_label2vol , example 2
 	mri_label2vol --label $V1_label \
 		      --temp $FS_T1Orig \
