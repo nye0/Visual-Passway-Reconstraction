@@ -1,15 +1,98 @@
 #!/bin/bash
-PreprocessedImage=$1
-BrainMask=$2
-T1Raw=$3
-ResultRoot=$4
 #PreprocessedImage=result/testing/raw-den-unr-mdc-unbiased.mif
 #BrainMask=/Users/ningrongye/Desktop/python/MRI/TCB/Test_mrtrix/FSL_brainmask.mif
 #T1Raw=data/FT_T1/
 #ResultRoot=result/FiberEstimation/
-if [ ! -d "${ResultRoot}" ]; then
-	mkdir -p $ResultRoot
+
+get_batch_options(){
+        local arguments=("$@")
+        local index=0
+        local numArgs=${#arguments[@]}
+        local argument
+
+        while [ ${index} -lt ${numArgs} ]; do
+                argument=${arguments[index]}
+                case ${argument} in
+                        --PreprocessedImage=*)
+                                PreprocessedImage=${argument#*=}
+                                index=$(( index + 1 ))
+                                ;;
+                        --T1Image=*)
+                                T1Raw=${argument#*=}
+                                index=$(( index + 1 ))
+                                ;;
+                        --BrainMask=*)
+                                # 
+                                BrainMask=${argument#*=}
+                                index=$(( index + 1 ))
+                                ;;
+                        --ResultRoot=*)
+                                ResultRoot=${argument#*=}
+                                index=$(( index + 1 ))
+                                ;;
+                        *)
+                echo ""
+                echo "ERROR: Unrecognized Option: ${argument}"
+                echo ""
+                exit 1
+                ;;
+        esac
+    done
+}
+get_batch_options "$@"
+# check the input
+#----------------------------------------------------------
+if [ -n "${PreprocessedImage}" ]; then
+        if [ -e "${PreprocessedImage}" ]; then
+                echo PreprocessedImage: $PreprocessedImage
+        else
+                echo PreprocessedImage Do not exist!
+                exit
+        fi
+else
+        echo Please set PreprocessedImage!
+        exit
 fi
+if [ -n "${T1Raw}" ]; then
+        if [ -e "${T1Raw}" ]; then
+                echo T1Image: $T1Raw
+        else    
+                echo T1Image Do not exist!
+                exit
+        fi      
+else    
+        echo Please set T1Image!
+        exit
+fi    
+if [ -n "${BrainMask}" ]; then
+        if [ -e "${BrainMask}" ]; then
+                echo BrainMask: $BrainMask
+        else    
+                echo BrainMask Do not exist!
+                exit
+        fi      
+else            
+        echo Please set BrainMask!
+        exit
+fi
+if [ -n "${ResultRoot}" ]; then
+        ((checked+=1))
+        echo ResultRoot: $ResultRoot
+        if [ ! -d "${ResultRoot}" ]; then
+                mkdir -p ${ResultRoot}
+        fi
+else
+        echo Please Set ResultRoot!
+        exit
+fi
+#----------------------------------------------------------
+
+
+
+
+
+
+
 # Response Function (RF) estimation
 wm_rf=$ResultRoot/rf_wm.txt
 gm_rf=$ResultRoot/rf_gm.txt
@@ -34,7 +117,7 @@ tt5_nocoreg=$ResultRoot/5tt-nocoreg.mif
   diff2struct_mrtrix=$ResultRoot/diff2struct-mrtrix.txt
   tt5_nocoreg_NotUnityMask=${tt5_nocoreg%%.mif}-NoUnityMask.mif
 tt5_coreg=$ResultRoot/5tt-coreg.mif
-
+gmwmSeed=${tt5_coreg%%.mif}-gmwmSeed.mif
 
 dwi2response	dhollander \
 		$PreprocessedImage \
@@ -82,7 +165,6 @@ mrconvert $T1Raw $T1Use
 # result 5tt_nocoreg contains 5 brain voxels with non-unity sum of partial volume fractions
 5ttcheck $tt5_nocoreg -masks $tt5_nocoreg_NotUnityMask
 mrview $tt5_nocoreg &
-# not tested:
 dwiextract $PreprocessedImage - -bzero | mrmath - mean ${b0_mean%%.nii.gz}.mif -axis 3
 mrconvert ${b0_mean%%.nii.gz}.mif $b0_mean
 tt5_nocoreg_nii=${tt5_nocoreg%%.mif}.nii.gz
@@ -101,3 +183,11 @@ mrtransform $tt5_nocoreg \
 mrview  $PreprocessedImage \
 	-overlay.load $tt5_nocoreg -overlay.colourmap 2 \
 	-overlay.load $tt5_coreg -overlay.colourmap 1 &
+
+# Preparing a mask of streamline seeding
+5tt2gmwmi $tt5_coreg $gmwmSeed
+mrview $PreprocessedImage \
+        -overlay.load $gmwmSeed &
+# not good maybe due to the PreprocessedImage is not good.
+
+
