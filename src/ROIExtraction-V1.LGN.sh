@@ -103,7 +103,7 @@ Right_LGNUse=$MaskUseRoot/T1Orig-rh.LGN.nii.gz
 Transform_FS2T1Orig=$FSRoot/mri/transforms/FS2T1Orig.data
 
 mkdir -p $MaskUseRoot $SUBJECTS_DIR
-echo recon-all -sd $SUBJECTS_DIR \
+recon-all -sd $SUBJECTS_DIR \
 	  -subjid $SubjectID \
 	  -cm \
 	  -all \
@@ -111,22 +111,22 @@ echo recon-all -sd $SUBJECTS_DIR \
 	  -qcache \
 	  -i $T1Image/$T1_f1 \
 	  -T2 $T2Image/$T2_f1 -T2pial
-echo segmentThalamicNuclei.sh $SubjectID
-echo freeview -v ${SUBJECTS_DIR}/${SubjectID}/mri/nu.mgz \
-	 -v ${SUBJECTS_DIR}/${SubjectID}/mri/ThalamicNuclei.v12.T1.mgz:colormap=lut &
+segmentThalamicNuclei.sh $SubjectID
+#freeview -v ${SUBJECTS_DIR}/${SubjectID}/mri/nu.mgz \
+#	 -v ${SUBJECTS_DIR}/${SubjectID}/mri/ThalamicNuclei.v12.T1.mgz:colormap=lut &
 # extract LGN ID was extract from $FREESURFER_HOME/FreeSurferColorLUT.txt 
-echo mri_binarize --i $FS_ThalamicNucleiSeg \
+mri_binarize --i $FS_ThalamicNucleiSeg \
 	     --match $Left_LGN_ID \
 	     --o ${Left_LGN}.mgz 
-echo mri_binarize --i $FS_ThalamicNucleiSeg \
+mri_binarize --i $FS_ThalamicNucleiSeg \
              --match $Right_LGN_ID \
              --o ${Right_LGN}.mgz 
 
-echo mri_label2vol --seg ${Left_LGN}.mgz  \
+mri_label2vol --seg ${Left_LGN}.mgz  \
 	      --temp $FS_T1Orig \
 	      --o ${Left_LGNUse} \
 	      --regheader $FS_ThalamicNucleiSeg
-echo mri_label2vol --seg ${Right_LGN}.mgz  \
+mri_label2vol --seg ${Right_LGN}.mgz  \
 	      --temp $FS_T1Orig \
               --o ${Right_LGNUse} \
               --regheader $FS_ThalamicNucleiSeg
