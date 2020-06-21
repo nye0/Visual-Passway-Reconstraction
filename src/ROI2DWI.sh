@@ -6,9 +6,13 @@ diff2struct_mrtrix=$2
 #	mkdir -p $ResultRoot
 #done
 
-RawROI_mif=${RawROI%%.nii.gz}.mif
+if [!  "${RawROI#*.}" == "mif" ] ; then
+	RawROI_mif=${RawROI%%.nii.gz}.mif
+	mrconvert $RawROI $RawROI_mif
+else
+	RawROI_mif=${RawROI}
+fi
 ROIUse=${RawROI_mif%%.mif}-DWI.mif
-mrconvert $RawROI ${RawROI%%.nii.gz}.mif
 mrtransform $RawROI_mif \
 	    -linear $diff2struct_mrtrix \
             -inverse $ROIUse
