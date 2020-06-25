@@ -8,8 +8,8 @@ ResultRoot=sys.argv[2]  #os.path.dirname(ROIUsePath)
 Tracks=sys.argv[3]
 TrackedROIName=sys.argv[4]
 vector_txt=os.path.join(ResultRoot,TrackedROIName+'-vector.txt')
-ROIFinial_temp=os.path.join(ResultPath,TrackedROIName+'.nii.gz')
-ROIFinial=os.path.join(ResultPath,TrackedROIName+'.mif')
+ROIFinial_temp=os.path.join(ResultRoot,TrackedROIName+'.nii.gz')
+ROIFinial=os.path.join(ResultRoot,TrackedROIName+'.mif')
 
 
 ROIFileName=os.path.basename(RawROIPath)
@@ -19,7 +19,8 @@ ROIFileName=os.path.basename(RawROIPath)
 if RawROIPath.split('.')[-1]=='mif':
     OutputROIName='.'.join(ROIFileName.split('.')[:-1])+'-Parcellation.mif'
     ROIPath='.'.join(RawROIPath.split('.')[:-1]+['nii.gz'])
-    call(["mrconvert",RawROIPath,ROIPath])
+    if not os.path.exists(ROIPath):
+        call(["mrconvert",RawROIPath,ROIPath])
 else:
     OutputROIName='.'.join(ROIFileName.split('.')[:-2])+'-Parcellation.mif'
     # default RawROIfile postfix should be nii.gz 
