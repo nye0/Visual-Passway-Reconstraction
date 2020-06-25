@@ -1,4 +1,3 @@
-#! /anaconda3/bin/python
 import sys,os
 import SimpleITK as sitk
 from subprocess import call
