@@ -5,6 +5,10 @@
 #T2=./data/YQ_T2_0007
 #T2_f1=`ls  $T2|head -1`
 #ID=YQ_0006
+TemplateImagePath=$FSLDIR/data/standard/MNI152_T1_1mm.nii.gz
+# OpticalNerve_ROI should be draw on the template image.
+#OpticalNerve_ROIRoot=
+#./data/lh.OptialNever.MNI152_1mm.nii.gz
 get_batch_options(){
         local arguments=("$@")
         local index=0
@@ -86,7 +90,7 @@ SUBJECTS_DIR=${ResultRoot}/freesurfer/
 T1_f1=`ls $T1Image|head -1`
 T2_f1=`ls  $T2Image|head -1`
 MaskUseRoot=${ResultRoot}/ROIUse/
-
+AntsRegRoot=${ResultRoot}/AntsReg/
 
 Left_LGN_ID=8109
 Right_LGN_ID=8209
@@ -102,7 +106,7 @@ Right_LGNUse=$MaskUseRoot/T1Orig-rh.LGN.nii.gz
 
 Transform_FS2T1Orig=$FSRoot/mri/transforms/FS2T1Orig.data
 
-mkdir -p $MaskUseRoot $SUBJECTS_DIR
+mkdir -p $MaskUseRoot $SUBJECTS_DIR $AntsRegRoot
 recon-all -sd $SUBJECTS_DIR \
 	  -subjid $SubjectID \
 	  -cm \
@@ -150,3 +154,32 @@ for h in lh rh; do
 		      --fillthresh .3 \
 		      --proj frac 0 1 .1		     
 done
+
+# optical nerve
+TargetImage=$FS_T1Orig
+prefix=Template2T1Orig
+antsRegistrationSyN.sh  -d 3 \
+                        -f $TargetImage \
+                        -m $TemplateImagePath \
+                        -t s  \
+                        -o $AntsRegRoot/$prefix
+AffineTrans=$AntsRegRoot/${prefix}0GenericAffine.mat
+DiformedTrans=$AntsRegRoot/${prefix}1Warp.nii.gz
+DiformedTrans_inverse=$AntsRegRoot/${prefix}1InverseWarp.nii.gz
+
+for h in lh rh; do
+	OpticalNerve_ROI=./data/${h}.OptialNerve.MNI152_1mm.nii.gz
+	ROI2Target=$MaskUseRoot/T1Orig-${h}.OptialNerve.MNI152_1mm.nii.gz
+	ROI2Target_bin=${ROI2Target%%.nii.gz}-bin.nii.gz
+	antsApplyTransforms -d 3 \
+                            -i $TemplateROI \
+                            -o $ROI2Target \
+                            -r $TargetImagePath \
+                            -t $DiformedTrans \
+                            -t $AffineTrans
+	
+	fslmaths $ROI2Target \
+        	-thr 0  \
+	        -bin $ROI2Target_bin
+done
+
