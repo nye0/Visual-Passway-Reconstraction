@@ -6,7 +6,7 @@ diff2struct_mrtrix=$2
 #	mkdir -p $ResultRoot
 #done
 
-if [!  "${RawROI#*.}" == "mif" ] ; then
+if [ !  "${RawROI#*.}" == "mif" ] ; then
 	RawROI_mif=${RawROI%%.nii.gz}.mif
 	mrconvert $RawROI $RawROI_mif
 else
