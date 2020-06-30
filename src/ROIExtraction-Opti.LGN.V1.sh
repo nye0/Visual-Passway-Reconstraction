@@ -169,8 +169,9 @@ DiformedTrans_inverse=$AntsRegRoot/${prefix}1InverseWarp.nii.gz
 
 for h in lh rh; do
 	OpticalNerve_ROI=./data/${h}.OptialNerve.MNI152_1mm.nii.gz
-	ROI2Target=$MaskUseRoot/T1Orig-${h}.OptialNerve.MNI152_1mm.nii.gz
-	ROI2Target_bin=${ROI2Target%%.nii.gz}-bin.nii.gz
+	ROI2Target=$MaskUseRoot/{h}.OptialNerve.MNI152_1mm-T1Orig.nii.gz
+	ROI2Target_bin=$MaskUseRoot/T1Orig-${h}.OptialNerve.nii.gz
+	#${ROI2Target%%.nii.gz}-bin.nii.gz
 	antsApplyTransforms -d 3 \
                             -i $TemplateROI \
                             -o $ROI2Target \
