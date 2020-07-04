@@ -47,7 +47,7 @@ get_batch_options(){
                                 index=$(( index + 1 ))
                                 ;;
 			--ResultRoot=*)
-				ResultRoot==${argument#*=}
+				ResultRoot=${argument#*=}
                                 index=$(( index + 1 ))
                                 ;;
                         *)

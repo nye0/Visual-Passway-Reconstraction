@@ -124,11 +124,11 @@ dwi2response	dhollander \
 		$wm_rf $gm_rf $csf_rf \
 		-voxel $rf_voxels
 ## check if the voxel is correct:
-mrview $PreprocessedImage -overlay.load $rf_voxels &
+#mrview $PreprocessedImage -overlay.load $rf_voxels &
 ## check the Response Function
 ## if response function is a sphere, dwi is isotropic diffusion. 
-shview $wm_rf & # should be anisotropic in b1000 ...
-shview $gm_rf &
+#shview $wm_rf & # should be anisotropic in b1000 ...
+#shview $gm_rf &
 
 # Estimation of Fiber Orientation Distributions (FOD)
 dwi2fod 	msmt_csd \
@@ -138,7 +138,7 @@ dwi2fod 	msmt_csd \
 		$gm_rf $gm_fod \
 		$csf_rf $csf_fod
 mrconvert -coord 3 0 $wm_fod - | mrcat $csf_fod $gm_fod - $vfMap
-mrview $vfMap -odf.load_sh $wm_fod &
+#mrview $vfMap -odf.load_sh $wm_fod &
 ## check list:
 ## 1. if FOD could accurately resolve crossing fibers, e.g. by inspecting FOD estimation in locations known to contain crossing fibers by anatomy 
 ## 2. if wm_fod only performed within the borders of the white matter. 
@@ -150,7 +150,7 @@ mtnormalise 	$wm_fod $wm_fodnorm \
 		$csf_fod $csf_fodnorm \
 		-mask $BrainMask
 mrconvert -coord 3 0 $wm_fodnorm - | mrcat $csf_fodnorm $gm_fodnorm - $vfMap_norm
-mrview $vfMap_norm -odf.load_sh $wm_fodnorm &
+#mrview $vfMap_norm -odf.load_sh $wm_fodnorm &
 
 # Preparing Anatomically Constrained Tractography (ACT)
 ## 1. generating a five-tissue-type (5TT) segmented tissue image 
@@ -164,7 +164,7 @@ mrconvert $T1Raw $T1Use
 5ttgen fsl $T1Use ${tt5_nocoreg}
 # result 5tt_nocoreg contains 5 brain voxels with non-unity sum of partial volume fractions
 5ttcheck $tt5_nocoreg -masks $tt5_nocoreg_NotUnityMask
-mrview $tt5_nocoreg &
+#mrview $tt5_nocoreg &
 dwiextract $PreprocessedImage - -bzero | mrmath - mean ${b0_mean%%.nii.gz}.mif -axis 3
 mrconvert ${b0_mean%%.nii.gz}.mif $b0_mean
 tt5_nocoreg_nii=${tt5_nocoreg%%.mif}.nii.gz
@@ -180,13 +180,13 @@ transformconvert 	$diff2struct_fsl \
 mrtransform $tt5_nocoreg \
 	    -linear $diff2struct_mrtrix \
 	    -inverse $tt5_coreg
-mrview  $PreprocessedImage \
+echo mrview  $PreprocessedImage \
 	-overlay.load $tt5_nocoreg -overlay.colourmap 2 \
 	-overlay.load $tt5_coreg -overlay.colourmap 1 &
 
 # Preparing a mask of streamline seeding
 5tt2gmwmi $tt5_coreg $gmwmSeed
-mrview $PreprocessedImage \
+echo mrview $PreprocessedImage \
         -overlay.load $gmwmSeed &
 # not good maybe due to the PreprocessedImage is not good.
 
