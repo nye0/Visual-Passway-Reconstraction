@@ -86,9 +86,9 @@ else
         exit
 fi
 
-if [ -n "${seed_roi}" ]; then
-        if [ -e "${seed_roi}" ]; then
-                echo seed_roi: $seed_roi
+if [ -n "${seed}" ]; then
+        if [ -e "${seed}" ]; then
+                echo seed_roi: $seed
         else
                 echo seed roi Do not exist!
                 exit
@@ -98,9 +98,9 @@ else
         exit
 fi
 
-if [ -n "${include_roi}" ]; then
-        if [ -e "${include_roi}" ]; then
-                echo include_roi: $include_roi
+if [ -n "${include}" ]; then
+        if [ -e "${include}" ]; then
+                echo include_roi: $include
         else
                 echo include roi Do not exist!
                 exit
