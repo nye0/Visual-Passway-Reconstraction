@@ -1,4 +1,5 @@
 #!/bin/bash
+NumberOfThreads=10
 #SUBJECTS_DIR=/media/oxygen/y2/202002/git/freesurfer_LGNextraction/result/
 #Raw=./data/YQ_T1_0006
 #T1_f1=`ls $Raw|head -1`
@@ -87,6 +88,8 @@ fi
 #----------------------------------------------------------
 
 SUBJECTS_DIR=${ResultRoot}/freesurfer/
+#/home1/Test/HCP/100610/HCPpipelineResult/T1w/
+#${ResultRoot}/freesurfer/
 T1_f1=`ls $T1Image|head -1`
 T2_f1=`ls  $T2Image|head -1`
 MaskUseRoot=${ResultRoot}/ROIUse/
@@ -105,17 +108,28 @@ Right_LGNUse=$MaskUseRoot/T1Orig-rh.LGN.nii.gz
 
 
 Transform_FS2T1Orig=$FSRoot/mri/transforms/FS2T1Orig.data
-
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=$NumberOfThreads
+#a="
 mkdir -p $MaskUseRoot $SUBJECTS_DIR $AntsRegRoot
+if [[ $T1Image =~ "nii.gz" ]] ; then
+	T1=$T1Image
+	T2=$T2Image
+else
+	T1=$T1Image/$T1_f1
+	T2=$T2Image/$T2_f1
+fi
 recon-all -sd $SUBJECTS_DIR \
 	  -subjid $SubjectID \
 	  -cm \
 	  -all \
 	  -mprage \
 	  -qcache \
-	  -i $T1Image/$T1_f1 \
-	  -T2 $T2Image/$T2_f1 -T2pial
+	  -i $T1 \
+	  -T2 $T2 -T2pial
+
+export ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=$NumberOfThreads
 segmentThalamicNuclei.sh $SubjectID
+#"
 #freeview -v ${SUBJECTS_DIR}/${SubjectID}/mri/nu.mgz \
 #	 -v ${SUBJECTS_DIR}/${SubjectID}/mri/ThalamicNuclei.v12.T1.mgz:colormap=lut &
 # extract LGN ID was extract from $FREESURFER_HOME/FreeSurferColorLUT.txt 
@@ -136,11 +150,18 @@ mri_label2vol --seg ${Right_LGN}.mgz  \
               --regheader $FS_ThalamicNucleiSeg
 
 # V1 
+# or
+#bbregister 	--mov $FS_T1Orig\
+#		--s $SubjectID\
+#	       	--reg ${Transform_FS2T1Orig}\
+#	       	--t1
+# this can be use for register T1 to dmri or fmri image
 tkregister2 --mov $FS_T1Orig \
 	    --noedit \
 	    --s $SubjectID \
 	    --regheader \
 	    --reg  ${Transform_FS2T1Orig}
+
 for h in lh rh; do
 	V1_label=$FSRoot/label/${h}.V1_exvivo.label
 	V1Use=$MaskUseRoot/T1Orig-${h}.V1_exvivo.nii.gz
@@ -150,9 +171,9 @@ for h in lh rh; do
 		      --subject $SubjectID \
 		      --hemi $h \
 		      --o ${V1Use} \
-		      --reg $Transform_FS2T1Orig \
-		      --fillthresh .3 \
-		      --proj frac 0 1 .1		     
+		      --reg ${Transform_FS2T1Orig}
+#		      --fillthresh .3 \
+#		      --proj frac 0 1 .1		     
 done
 
 # optical nerve
@@ -161,7 +182,7 @@ prefix=Template2T1Orig
 antsRegistrationSyN.sh  -d 3 \
                         -f $TargetImage \
                         -m $TemplateImagePath \
-                        -t s  \
+			-t s  \
                         -o $AntsRegRoot/$prefix
 AffineTrans=$AntsRegRoot/${prefix}0GenericAffine.mat
 DiformedTrans=$AntsRegRoot/${prefix}1Warp.nii.gz
