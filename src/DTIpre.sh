@@ -179,6 +179,18 @@ mrdegibbs $den $den_unr -axes 0,1
 
 #Motion and distortion correction
 ${b0_script};
+# If RawImage if Nii add -fslgrad bvecs bvals
+if  [[ $RawImage =~ "nii.gz" ]]  ; then
+	bvecs_pe=${RawImage%%.nii.gz}.bvec
+	bvals_pe=${RawImage%%.nii.gz}.bval
+	bvecs_rpe=${RPEImage%%.nii.gz}.bvec
+	bvals_rpe=${RPEImage%%.nii.gz}.bval
+	bvecs=${ResultRoot}/pe_rpe.bvec
+	bvals=${ResultRoot}/pe_rpe.bval
+	paste $bvecs_pe $bvecs_rpe > $bvecs
+	paste $bvals_pe $bvals_rpe > $bvals
+	dwipreproc_opt=`echo $dwipreproc_opt -fslgrad  $bvecs $bvals`
+fi
 dwipreproc $PrepImage $PrepImage_mdc \
 	-pe_dir ${RawImage_PE} \
 	${dwipreproc_opt} \
